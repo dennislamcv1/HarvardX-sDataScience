@@ -1,4 +1,4 @@
-# HarvardX-sDataScience
+# HarvardX Data Science
 ## Professional Certificate in Data Science
 
 What you will learn
