@@ -1,0 +1,98 @@
+---
+title: "Introduction to ggplot2"
+output: html_document
+date: "2024-07-22"
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(dslabs)
+data(heights)
+data(murders)
+p <- ggplot(murders)
+class(p)
+
+# A blank slate plot
+
+data(heights)
+p <- heights %>% ggplot()
+
+# total and population
+
+murders %>% ggplot(aes(x = population, y = total)) +
+  geom_point()
+
+urders %>% ggplot(aes(total, population)) +
+  geom_point()
+
+# We need to map a character to each point through the label argument in aes
+
+library(dplyr)
+library(ggplot2)
+library(dslabs)
+data(heights)
+data(murders)
+murders %>% ggplot(aes(population, total, label = abb)) +
+  geom_label()
+
+# By using the color argument in geom_label because we want all colors to be blue so we do not need to map colors
+
+library(dplyr)
+library(ggplot2)
+library(dslabs)
+data(murders)
+murders %>% ggplot(aes(population, total, label = abb)) +
+  geom_label(color = "blue")
+
+# Mapping the colors through the color argument of aes because each label needs a different color
+
+murders %>% ggplot(aes(population, total, label = abb, color = region)) +
+  geom_label()
+
+p<- murders %>% ggplot(aes(population, total, label = abb, color = region)) + geom_label()
+p + scale_x_log10() + scale_y_log10()
+
+p<- murders %>% ggplot(aes(population, total, label = abb, color = region)) +
+  geom_label()
+p + scale_x_log10() +
+  scale_y_log10() + 
+  ggtitle("Gun murder data")
+
+# height
+
+library(dplyr)
+library(ggplot2)
+library(dslabs)
+data(heights)
+p <- heights %>% 
+  ggplot(aes(height))
+
+p <- heights %>% 
+  ggplot(aes(height))
+p + geom_histogram()
+
+
+p <- heights %>% 
+  ggplot(aes(height))
+p + geom_histogram(binwidth = 1)
+
+heights %>% 
+  ggplot(aes(height)) + 
+  geom_density()
+
+heights %>% 
+  ggplot(aes(height, group = sex)) + 
+  geom_density()
+
+heights %>% 
+  ggplot(aes(height, color = sex)) + 
+  geom_density() 
+
+heights %>% 
+  ggplot(aes(height, fill = sex)) + 
+  geom_density(alpha = 0.2)
+
+
+```
+

@@ -1,0 +1,51 @@
+---
+title: "Normal Distributions"
+output: html_document
+date: "2024-07-22"
+---
+
+```{r}
+library(dslabs)
+data(heights)
+x <- heights$height[heights$sex == "Male"]
+mean(x > 69 & x <= 72)
+
+
+library(dslabs)
+data(heights)
+x <- heights$height[heights$sex=="Male"]
+avg <- mean(x)
+stdev <- sd(x)
+pnorm(72, avg, stdev) - pnorm(69, avg, stdev)
+
+
+library(dslabs)
+data(heights)
+x <- heights$height[heights$sex == "Male"]
+avg <- mean(x)
+stdev <- sd(x)
+exact <- mean(x>79 & x<=81)
+approx <- pnorm(81, avg, stdev) - pnorm(79, avg, stdev)
+exact/approx
+
+
+# use pnorm to calculate the proportion over 7 feet (7*12 inches)
+1 - pnorm(7*12, 69, 3)
+
+
+p <- 1 - pnorm(7*12, 69, 3)
+round(p * 10^9)
+
+p <- 1 - pnorm(7*12, 69, 3)
+N <- round(p * 10^9)
+10/N
+
+p <- 1 - pnorm(6*12 + 8, 69, 3)
+N <- round(p * 10^9)
+150/N
+
+# As seen in exercise 3, the normal approximation tends to underestimate the extreme values. It's possible that there are more seven footers than we predicted.
+
+
+```
+

@@ -1,0 +1,35 @@
+---
+title: "Data Types"
+output: html_document
+date: "2024-07-22"
+---
+
+```{r}
+
+library(dslabs)
+data(heights)
+names(heights)
+
+# Categorical
+
+library(dslabs)
+data(heights)
+x <- heights$height
+length(unique(x))
+
+library(dslabs)
+data(heights)
+x <- heights$height
+tab <- table(x)
+
+library(dslabs)
+data(heights)
+tab <- table(heights$height)
+sum(tab==1)
+
+# It is more effective to consider heights to be numerical given the number of unique values we observe and the fact that if we keep collecting data even more will be observed.
+
+
+
+```
+
