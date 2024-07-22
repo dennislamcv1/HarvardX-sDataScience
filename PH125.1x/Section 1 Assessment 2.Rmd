@@ -1,0 +1,32 @@
+---
+title: "Section 1 Assessment"
+output: html_document
+date: "2024-07-21"
+---
+
+```{r}
+library(dslabs)
+data(movielens)
+```
+
+```{r}
+str(movielens)
+
+```
+
+```{r}
+
+nrow(movielens)
+
+ncol(movielens)
+
+class(movielens$title)
+
+class(movielens$genres)
+
+nlevels(movielens$genres)
+
+
+
+```
+

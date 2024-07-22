@@ -1,0 +1,214 @@
+---
+title: "Section 3 Assessment"
+output: html_document
+date: "2024-07-22"
+---
+
+```{r}
+library(dslabs)
+data(heights)
+options(digits = 3)    # report 3 significant digits for all answers
+```
+
+```{r}
+
+
+# Calculate the average height
+avg_height <- mean(heights$height)
+
+# Create a logical vector indicating individuals above average height
+ind <- heights$height > avg_height
+
+# Count the number of individuals above average height
+num_above_avg <- sum(ind)
+
+# Display the average height and number of individuals above average height
+avg_height
+num_above_avg
+
+```
+
+```{r}
+# Filter individuals who are above average height and female
+above_avg_female <- subset(heights, height > avg_height & sex == "Female")
+
+# Count the number of such individuals
+num_above_avg_female <- nrow(above_avg_female)
+
+# Display the number of individuals above average height and female
+num_above_avg_female
+```
+
+```{r}
+# Calculate the total number of individuals
+total_individuals <- nrow(heights)
+
+# Calculate the number of females
+num_females <- sum(heights$sex == "Female")
+
+# Calculate the proportion of females
+proportion_female <- num_females / total_individuals
+
+# Display the proportion of females with 3 significant digits
+round(proportion_female, 3)
+```
+
+```{r}
+# Determine the minimum height in the dataset
+min_height <- min(heights$height)
+
+# Display the minimum height
+min_height
+```
+
+```{r}
+# Determine the minimum height in the dataset
+min_height <- min(heights$height)
+
+# Use match() to find the index of the first individual with the minimum height
+index_min_height <- match(min_height, heights$height)
+
+# Display the index of the first individual with the minimum height
+index_min_height
+```
+
+```{r}
+# Determine the minimum height in the dataset
+min_height <- min(heights$height)
+
+# Use match() to find the index of the first individual with the minimum height
+index_min_height <- match(min_height, heights$height)
+
+# Subset the sex column using the index
+individual_sex <- heights$sex[index_min_height]
+
+# Display the sex of the individual with the minimum height
+individual_sex
+```
+
+```{r}
+# Determine the maximum height in the dataset
+max_height <- max(heights$height)
+
+# Display the maximum height with 3 significant digits
+round(max_height, 3)
+```
+
+```{r}
+# Determine the minimum and maximum heights
+min_height <- min(heights$height)
+max_height <- max(heights$height)
+
+# Create a vector x with integers between min_height and max_height
+x <- ceiling(min_height):floor(max_height)
+
+# Display the vector x
+x
+```
+
+
+```{r}
+
+# Determine the minimum and maximum heights
+min_height <- min(heights$height)
+max_height <- max(heights$height)
+
+# Create a vector x with integers between min_height and max_height
+x <- ceiling(min_height):floor(max_height)
+
+# Count integers in x that are NOT heights in the dataset
+not_in_dataset <- sum(!(x %in% heights$height))
+
+# Display the count of integers in x that are NOT heights in the dataset
+not_in_dataset
+
+
+```
+
+```{r}
+# Convert heights from inches to centimeters
+heights2 <- heights
+heights2$ht_cm <- heights$height * 2.54
+
+# Display the first few rows of heights2 to verify
+head(heights2)
+```
+
+
+```{r}
+# Determine the height in centimeters of the 18th individual
+height_18th_cm <- heights2$ht_cm[18]
+
+# Display the height in centimeters of the 18th individual
+height_18th_cm
+```
+
+```{r}
+# Calculate the mean height in centimeters
+mean_height_cm <- mean(heights2$ht_cm)
+
+# Display the mean height in centimeters
+mean_height_cm
+```
+
+```{r}
+# Count the number of females in the heights2 dataset
+num_females <- sum(heights2$sex == "Female")
+
+# Display the number of females
+num_females
+```
+
+```{r}
+# Subset heights2 dataset to include only females
+females <- heights2[heights2$sex == "Female", ]
+
+# Calculate the mean height of females in centimeters
+mean_height_females_cm <- mean(females$ht_cm)
+
+# Display the mean height of females in centimeters
+mean_height_females_cm
+```
+
+```{r}
+      
+library(dslabs)
+data(olive)
+head(olive)
+```
+
+
+```{r}
+# Create a scatterplot of percent palmitic acid vs. percent palmitoleic acid
+plot(olive$palmitoleic, olive$palmitic,
+     xlab = "Percent Palmitoleic Acid",
+     ylab = "Percent Palmitic Acid",
+     main = "Scatterplot of Palmitic Acid vs. Palmitoleic Acid")
+
+# Add a regression line for visual aid
+abline(lm(olive$palmitic ~ olive$palmitoleic), col = "blue")
+```
+```{r}
+# Create a histogram of the percentage of eicosenoic acid
+hist(olive$eicosenoic, 
+     main = "Histogram of Eicosenoic Acid Percentage",
+     xlab = "Percentage of Eicosenoic Acid",
+     ylab = "Frequency",
+     col = "lightblue",
+     border = "white")
+```
+
+```{r}
+# Create a boxplot of palmitic acid percentage by region
+boxplot(palmitic ~ region, data = olive,
+        main = "Boxplot of Palmitic Acid Percentage by Region",
+        xlab = "Region",
+        ylab = "Percentage of Palmitic Acid",
+        col = "lightblue",
+        border = "black")
+```
+
+
+
+
+
