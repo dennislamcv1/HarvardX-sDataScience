@@ -1,0 +1,234 @@
+---
+title: "Movies Recommendation"
+output: html_document
+date: "2024-07-22"
+---
+
+# Used smallest dataset
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##########################################################
+# Create edx and final_holdout_test sets 
+##########################################################
+
+# Note: this process could take a couple of minutes
+
+```{r}
+library(tidyverse)
+library(caret)
+```
+
+
+
+```{r}
+options(timeout = 120)
+```
+
+```{r}
+dl <- "ml-latest-small.zip"
+```
+
+```{r}
+ratings_file <- read.csv("ml-latest-small/ratings.csv")
+```
+
+
+```{r}
+str(ratings_file)
+```
+
+
+
+```{r}
+movies_file <- read.csv("ml-latest-small/movies.csv")
+```
+
+
+```{r}
+str(movies_file)
+```
+
+
+
+
+```{r}
+ratings <- read_csv("ml-latest-small/ratings.csv", col_names = TRUE, col_types = cols(
+  userId = col_integer(),
+  movieId = col_integer(),
+  rating = col_double(),
+  timestamp = col_integer()
+))
+```
+
+
+```{r}
+movies <- read_csv("ml-latest-small/movies.csv", col_names = TRUE, col_types = cols(
+  movieId = col_integer(),
+  title = col_character(),
+  genres = col_character()
+))
+
+```
+
+```{r}
+head(ratings)
+head(movies)
+```
+
+
+```{r}
+movielens <- left_join(ratings, movies, by = "movieId")
+```
+
+
+
+
+
+
+```{r}
+# Final hold-out test set will be 10% of MovieLens data
+set.seed(1, sample.kind = "Rounding")  # for R 3.6 or later
+test_index <- createDataPartition(y = movielens$rating, times = 1, p = 0.1, list = FALSE)
+edx <- movielens[-test_index, ]
+temp <- movielens[test_index, ]
+```
+
+
+```{r}
+# Make sure userId and movieId in final hold-out test set are also in edx set
+final_holdout_test <- temp %>%
+  semi_join(edx, by = "movieId") %>%
+  semi_join(edx, by = "userId")
+```
+
+
+```{r}
+# Add rows removed from final hold-out test set back into edx set
+removed <- anti_join(temp, final_holdout_test)
+edx <- rbind(edx, removed)
+```
+```{r}
+# Remove unnecessary objects
+rm(dl, ratings, movies, test_index, temp, movielens, removed)
+```
+
+```{r}
+# Verify the split
+nrow(edx)  # Check number of rows in edx
+nrow(final_holdout_test)  # Check number of rows in final_holdout_test
+```
+
+```{r}
+# write.csv(edx, "edx.csv", row.names = FALSE)
+# write.csv(final_holdout_test, "test.csv", row.names = FALSE)
+```
+
+
+## Script and RMSE
+
+```{r}
+# Load necessary libraries
+library(tidyverse)
+library(caret)
+```
+
+```{r}
+
+# Define RMSE function
+RMSE <- function(true_ratings, predicted_ratings) {
+  sqrt(mean((true_ratings - predicted_ratings)^2, na.rm = TRUE))
+}
+
+```
+
+```{r}
+# Split edx data into training and validation sets (80-20 split)
+set.seed(1, sample.kind = "Rounding")
+train_index <- createDataPartition(y = edx$rating, times = 1, p = 0.8, list = FALSE)
+train_set <- edx[train_index, ]
+validation_set <- edx[-train_index, ]
+```
+
+```{r}
+# Simple model: predict average rating for all movies
+mu <- mean(train_set$rating)
+naive_rmse <- RMSE(validation_set$rating, mu)
+```
+
+```{r}
+# Create results dataframe to store RMSEs of different models
+rmse_results <- data.frame(
+  method = "Average Rating Model",
+  RMSE = naive_rmse
+)
+
+```
+
+```{r}
+# Train a more complex model: movie effects model
+movie_avgs <- train_set %>%
+  group_by(movieId) %>%
+  summarize(b_i = mean(rating - mu))
+```
+
+```{r}
+# Predict ratings using the movie effects model
+predicted_ratings <- validation_set %>%
+  left_join(movie_avgs, by = "movieId") %>%
+  mutate(pred = mu + b_i) %>%
+  pull(pred)
+```
+
+```{r}
+# Calculate RMSE for movie effects model
+movie_effect_rmse <- RMSE(validation_set$rating, predicted_ratings)
+rmse_results <- bind_rows(rmse_results, data.frame(
+  method = "Movie Effects Model",
+  RMSE = movie_effect_rmse
+))
+```
+
+```{r}
+# Train a more complex model: movie + user effects model
+user_avgs <- train_set %>%
+  left_join(movie_avgs, by = "movieId") %>%
+  group_by(userId) %>%
+  summarize(b_u = mean(rating - mu - b_i))
+
+# Predict ratings using the movie + user effects model
+predicted_ratings <- validation_set %>%
+  left_join(movie_avgs, by = "movieId") %>%
+  left_join(user_avgs, by = "userId") %>%
+  mutate(pred = mu + b_i + b_u) %>%
+  pull(pred)
+
+# Calculate RMSE for movie + user effects model
+movie_user_effect_rmse <- RMSE(validation_set$rating, predicted_ratings)
+rmse_results <- bind_rows(rmse_results, data.frame(
+  method = "Movie + User Effects Model",
+  RMSE = movie_user_effect_rmse
+))
+
+```
+
+```{r}
+# Final model evaluation on final_holdout_test set using the best model (Movie + User Effects Model)
+final_predictions <- final_holdout_test %>%
+  left_join(movie_avgs, by = "movieId") %>%
+  left_join(user_avgs, by = "userId") %>%
+  mutate(pred = mu + b_i + b_u) %>%
+  pull(pred)
+```
+
+```{r}
+# Calculate RMSE for final_holdout_test set
+final_rmse <- RMSE(final_holdout_test$rating, final_predictions)
+
+# Output the RMSE results
+print(rmse_results)
+cat("Final RMSE on holdout test set:", final_rmse)
+```
+
