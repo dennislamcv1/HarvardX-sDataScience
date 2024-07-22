@@ -1,0 +1,47 @@
+---
+title: "Data Science Visualization Module 2"
+output: html_document
+date: "2024-07-22"
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(dslabs)
+dat <- us_contagious_diseases %>%
+filter(year == 1967 & disease=="Measles" & !is.na(population)) %>% mutate(rate = count / population * 10000 * 52 / weeks_reporting)
+state <- dat$state 
+rate <- dat$count/(dat$population/10000)*(52/dat$weeks_reporting)
+```
+
+```{r}
+state <- reorder(state, rate)
+print(state)
+levels(state)
+
+library(dplyr)
+library(ggplot2)
+library(dslabs)
+dat <- us_contagious_diseases %>% filter(year == 1967 & disease=="Measles" & count>0 & !is.na(population)) %>%
+ mutate(rate = count / population * 10000 * 52 / weeks_reporting) %>%
+ mutate(state = reorder(state, rate))
+dat %>% ggplot(aes(state, rate)) +
+ geom_bar(stat="identity") +
+ coord_flip()
+
+# It does not show all the data. We do not see the variability within a region and it's possible that the safest states are not in the West.
+
+library(dplyr)
+library(ggplot2)
+library(dslabs)
+data("murders")
+murders %>% mutate(rate = total/population*100000)
+murders %>% mutate(rate = total/population*100000) %>%
+  mutate(region=reorder(region, rate, FUN=median)) %>%
+  ggplot(aes(region, rate)) +
+  geom_boxplot() +
+  geom_point()
+
+
+```
+

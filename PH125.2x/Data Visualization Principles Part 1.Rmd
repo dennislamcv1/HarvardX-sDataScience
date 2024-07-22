@@ -1,0 +1,12 @@
+---
+title: "Data Visualization Principles Part 1"
+output: html_document
+date: "2024-07-22"
+---
+
+# Never. Barplots and tables are always better.
+
+# The axis does not start at 0. Judging by the length, it appears Trump received 3 times as many votes when in fact it was about 30% more.
+
+# The plot on the right is better because it orders the states by disease rate so we can quickly see the states with highest and lowest rates.
+
