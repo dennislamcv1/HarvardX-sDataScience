@@ -1,0 +1,149 @@
+---
+title: "Titanic Survival Exercises"
+output: html_document
+date: "2024-07-22"
+---
+
+```{r}
+options(digits = 3)    # report 3 significant digits
+library(tidyverse)
+library(titanic)
+
+titanic <- titanic_train %>%
+    select(Survived, Pclass, Sex, Age, SibSp, Parch, Fare) %>%
+    mutate(Survived = factor(Survived),
+           Pclass = factor(Pclass),
+           Sex = factor(Sex))
+```
+
+```{r}
+str(titanic)
+summary(titanic)
+
+```
+
+
+```{r}
+?titanic_train
+
+```
+
+```{r}
+# Density plot of age grouped by sex with alpha blending
+ggplot(titanic, aes(x = Age, fill = Sex)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density Plot of Age by Sex", x = "Age", y = "Density")
+
+# Density plot of age grouped by sex with faceting
+ggplot(titanic, aes(x = Age, fill = Sex)) +
+  geom_density(alpha = 0.5) +
+  facet_wrap(~Sex) +
+  labs(title = "Density Plot of Age by Sex with Faceting", x = "Age", y = "Density")
+
+# Stacked density plot of age grouped by sex
+ggplot(titanic, aes(x = Age, fill = Sex)) +
+  geom_density(position = "stack") +
+  labs(title = "Stacked Density Plot of Age by Sex", x = "Age", y = "Density")
+
+# Density plot of age grouped by sex with variable counts on the y-axis
+ggplot(titanic, aes(x = Age, fill = Sex, y = ..count..)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density Plot of Age by Sex (Count on Y-axis)", x = "Age", y = "Count")
+```
+
+```{r}
+params <- titanic %>%
+  filter(!is.na(Age)) %>%
+  summarize(mean = mean(Age), sd = sd(Age))
+
+
+ggplot(titanic %>% filter(!is.na(Age)), aes(sample = Age)) +
+  geom_qq(dparams = list(mean = params$mean, sd = params$sd)) +
+  geom_abline() +
+  labs(title = "QQ-Plot of Passenger Age",
+       x = "Theoretical Quantiles",
+       y = "Sample Quantiles")
+
+```
+
+```{r}
+ggplot(titanic, aes(x = Survived, fill = Sex)) +
+  geom_bar() +
+  labs(title = "Survival Count by Sex", x = "Survived", y = "Count")
+
+ggplot(titanic, aes(x = Survived, fill = Sex)) +
+  geom_bar(position = position_dodge()) +
+  labs(title = "Survival Count by Sex (Dodged)", x = "Survived", y = "Count")
+
+ggplot(titanic, aes(x = Sex, fill = Survived)) +
+  geom_bar() +
+  labs(title = "Sex Count by Survival Status", x = "Sex", y = "Count")
+
+ggplot(titanic, aes(x = Sex, fill = Survived)) +
+  geom_bar(position = position_dodge()) +
+  labs(title = "Sex Count by Survival Status (Dodged)", x = "Sex", y = "Count")
+
+
+
+
+
+
+```
+
+
+```{r}
+# Create the density plot with count on the y-axis
+ggplot(titanic %>% filter(!is.na(Age)), aes(x = Age, fill = Survived)) +
+  geom_density(alpha = 0.2, aes(y = ..count..)) +
+  labs(title = "Density Plot of Age Filled by Survival Status", x = "Age", y = "Count")
+```
+
+```{r}
+# Filter out individuals who paid a fare of 0
+titanic_filtered <- titanic %>% filter(Fare > 0)
+
+# Create the boxplot with log2 transformation
+ggplot(titanic_filtered, aes(x = Survived, y = log2(Fare), fill = Survived)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.4, width = 0.2) +
+  labs(title = "Boxplot of Log2 Transformed Fare Grouped by Survival Status",
+       x = "Survived", y = "Log2(Fare)")
+```
+
+```{r}
+# Basic barplot
+ggplot(titanic, aes(x = Pclass, fill = Survived)) +
+  geom_bar() +
+  labs(title = "Passenger Class Filled by Survival",
+       x = "Passenger Class", y = "Count")
+
+
+ggplot(titanic, aes(x = Pclass, fill = Survived)) +
+  geom_bar(position = position_fill()) +
+  labs(title = "Passenger Class Filled by Survival (Relative Proportions)",
+       x = "Passenger Class", y = "Proportion")
+
+
+ggplot(titanic, aes(x = Survived, fill = Pclass)) +
+  geom_bar(position = position_fill()) +
+  labs(title = "Survival Filled by Passenger Class (Relative Proportions)",
+       x = "Survival", y = "Proportion")
+
+```
+
+```{r}
+# Create the grid of density plots
+ggplot(titanic %>% filter(!is.na(Age)), aes(x = Age, fill = Survived)) +
+  geom_density(alpha = 0.2, aes(y = ..count..)) +
+  facet_grid(Sex ~ Pclass) +
+  labs(title = "Density Plot of Age Filled by Survival Status",
+       x = "Age", y = "Count")
+```
+
+
+
+
+
+
+
+
