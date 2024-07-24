@@ -1,0 +1,140 @@
+---
+title: "ACT scores"
+output: html_document
+date: "2024-07-24"
+---
+
+```{r}
+# Set the seed for reproducibility
+set.seed(16, sample.kind = "Rounding")
+
+# Generate the ACT scores dataset
+act_scores <- rnorm(10000, mean = 20.9, sd = 5.7)
+
+# View the first few values
+head(act_scores)
+
+```
+```{r}
+# Calculate the mean of act_scores
+mean_act_scores <- mean(act_scores)
+mean_act_scores
+
+# Calculate the standard deviation of act_scores
+sd_act_scores <- sd(act_scores)
+sd_act_scores
+
+# Count the number of perfect scores (36 or greater)
+perfect_scores <- sum(act_scores >= 36)
+perfect_scores
+
+# Calculate the probability of an ACT score greater than 30
+prob_greater_than_30 <- sum(act_scores > 30) / length(act_scores)
+prob_greater_than_30
+
+# Calculate the probability of an ACT score less than or equal to 10
+prob_less_than_or_equal_to_10 <- sum(act_scores <= 10) / length(act_scores)
+prob_less_than_or_equal_to_10
+
+
+```
+
+```{r}
+# Create a sequence of integers from 1 to 36
+x <- 1:36
+
+# Calculate the value of the probability density function
+f_x <- dnorm(x, mean = 20.9, sd = 5.7)
+
+# Plot x against f_x
+plot(x, f_x, type = "l", main = "Probability Density Function of ACT Scores",
+     xlab = "ACT Scores", ylab = "Density")
+
+```
+
+```{r}
+# Calculate the mean and standard deviation of act_scores
+mean_act_scores <- mean(act_scores)
+sd_act_scores <- sd(act_scores)
+
+# Convert act_scores to Z-scores
+z_scores <- (act_scores - mean_act_scores) / sd_act_scores
+
+# View the first few Z-scores
+head(z_scores)
+
+```
+
+```{r}
+# Calculate the probability of a Z-score greater than 2
+prob_z_greater_than_2 <- 1 - pnorm(2)
+prob_z_greater_than_2
+
+```
+
+```{r}
+# Calculate the ACT score value for Z = 2
+act_score_z_2 <- 2 * sd_act_scores + mean_act_scores
+act_score_z_2
+
+```
+
+```{r}
+# Calculate the 97.5th percentile of act_scores
+percentile_97_5 <- qnorm(0.975, mean = mean_act_scores, sd = sd_act_scores)
+percentile_97_5
+
+```
+
+```{r}
+# Define the CDF function
+act_cdf <- function(x) {
+  mean(act_scores <= x)
+}
+
+# Apply the CDF function to the range 1 to 36
+cdf_values <- sapply(1:36, act_cdf)
+cdf_values
+
+```
+
+```{r}
+# Find the minimum integer score with CDF value at least 0.95
+min_score_95 <- min(which(cdf_values >= 0.95))
+min_score_95
+
+```
+
+```{r}
+# Calculate the expected 95th percentile of ACT scores
+expected_95th_percentile <- qnorm(0.95, mean = 20.9, sd = 5.7)
+expected_95th_percentile
+
+```
+
+```{r}
+# Create the vector of quantiles for the 1st through 99th percentiles
+p <- seq(0.01, 0.99, 0.01)
+sample_quantiles <- quantile(act_scores, p)
+
+# Find the percentile of a score of 26
+percentile_26 <- which(sample_quantiles >= 26)[1]
+names(sample_quantiles)[percentile_26]
+
+```
+
+```{r}
+# Create the vector of theoretical quantiles
+theoretical_quantiles <- qnorm(p, mean = 20.9, sd = 5.7)
+
+# Create a QQ-plot
+plot(theoretical_quantiles, sample_quantiles, main = "QQ-Plot of ACT Scores",
+     xlab = "Theoretical Quantiles", ylab = "Sample Quantiles")
+abline(0, 1, col = "red")
+
+```
+
+
+
+
+
