@@ -1,0 +1,304 @@
+---
+title: "Discrete Probability"
+output: html_document
+date: "2024-07-23"
+---
+
+```{r}
+library(gtools)
+library(tidyverse)
+```
+
+```{r}
+# Set the seed for reproducibility
+set.seed(1)
+
+# Define the vector of runners
+runners <- c("Jamaica", "Jamaica", "Jamaica", "USA", "Ecuador", "Netherlands", "France", "South Africa")
+
+# Number of simulations
+num_simulations <- 10000
+
+# Initialize a counter for favorable outcomes
+favorable_outcomes <- 0
+
+# Run the Monte Carlo simulation
+for (i in 1:num_simulations) {
+    # Sample 3 runners without replacement
+    selected_runners <- sample(runners, size = 3, replace = FALSE)
+    
+    # Check if all 3 runners are from Jamaica
+    if (all(selected_runners == "Jamaica")) {
+        favorable_outcomes <- favorable_outcomes + 1
+    }
+}
+
+# Calculate the probability
+probability <- favorable_outcomes / num_simulations
+
+# Print the result
+cat("Probability that all 3 medalists are from Jamaica:", probability, "\n")
+
+```
+
+```{r}
+head(esoph)
+library(tidyverse)
+```
+```{r}
+str(esoph)
+```
+
+
+
+
+
+```{r}
+# Assuming the dataset esoph is already loaded
+n_groups <- nrow(esoph)
+
+```
+
+```{r}
+# Assuming the dataset esoph is already loaded
+all_cases <- sum(esoph$ncases)
+
+```
+
+```{r}
+# Assuming the dataset esoph is already loaded
+all_controls <- sum(esoph$ncontrols)
+
+```
+
+```{r}
+# Load the necessary library if not already loaded
+library(dplyr)
+
+esoph %>%
+  filter(alcgp == "120+") %>%
+  summarize(ncases = sum(ncases), ncontrols = sum(ncontrols)) %>%
+  mutate(p_case = ncases / (ncases + ncontrols)) %>%
+  pull(p_case)
+
+
+```
+
+```{r}
+# Display unique values in alcgp
+unique_alcgp <- levels(esoph$alcgp)
+unique_alcgp
+```
+
+```{r}
+esoph %>%
+  filter(alcgp == "0-39g/day") %>%
+  summarize(ncases = sum(ncases), ncontrols = sum(ncontrols)) %>%
+  mutate(p_case = ncases / (ncases + ncontrols)) %>%
+  pull(p_case)
+        
+```
+```{r}
+unique_tobgp <- levels(esoph$tobgp)
+unique_tobgp
+```
+
+
+
+
+```{r}
+# Load necessary library if not already loaded
+library(dplyr)
+
+# Filter for cases (ncases > 0)
+cases_data <- esoph %>% filter(ncases > 0)
+
+# Calculate the total number of cases
+total_cases <- sum(cases_data$ncases)
+
+# Calculate the number of cases where tobgp is "10-19" or higher
+cases_10g_or_more <- sum(cases_data$ncases[cases_data$tobgp %in% c("10-19", "20-29", "30+")])
+
+# Calculate the conditional probability
+conditional_probability <- cases_10g_or_more / total_cases
+
+# Print the result
+conditional_probability
+
+
+```
+
+```{r}
+# Load necessary library if not already loaded
+library(dplyr)
+
+# Filter for controls (ncontrols > 0)
+controls_data <- esoph %>% filter(ncontrols > 0)
+
+# Calculate the total number of controls
+total_controls <- sum(controls_data$ncontrols)
+
+# Calculate the number of controls where tobgp is "10-19" or higher
+controls_10g_or_more <- sum(controls_data$ncontrols[controls_data$tobgp %in% c("10-19", "20-29", "30+")])
+
+# Calculate the probability
+probability <- controls_10g_or_more / total_controls
+
+# Print the probability rounded to 3 significant figures
+round(probability, 3)
+
+
+```
+```{r}
+unique(esoph$tobgp)
+
+```
+
+```{r}
+# Load necessary library if not already loaded
+library(dplyr)
+
+# Filter for cases (ncases > 0)
+cases_data <- esoph %>% filter(ncases > 0)
+
+# Calculate the total number of cases
+total_cases <- sum(cases_data$ncases)
+
+# Calculate the number of cases in the highest alcohol group ("120+")
+cases_highest_alcohol <- sum(cases_data$ncases[cases_data$alcgp == "120+"])
+
+# Calculate the probability
+probability <- cases_highest_alcohol / total_cases
+
+# Print the probability rounded to 3 significant figures
+round(probability, 3)
+
+```
+
+```{r}
+# Load necessary library if not already loaded
+library(dplyr)
+
+# Filter for cases (ncases > 0)
+cases_data <- esoph %>% filter(ncases > 0)
+
+# Calculate the total number of cases
+total_cases <- sum(cases_data$ncases)
+
+# Calculate the number of cases in the highest tobacco group ("30+")
+cases_highest_tobacco <- sum(cases_data$ncases[cases_data$tobgp == "30+"])
+
+# Calculate the probability
+probability <- cases_highest_tobacco / total_cases
+
+# Print the probability rounded to 3 significant figures
+round(probability, 3)
+
+```
+
+```{r}
+# Load necessary library if not already loaded
+library(dplyr)
+
+# Filter for cases (ncases > 0)
+cases_data <- esoph %>% filter(ncases > 0)
+
+# Calculate the total number of cases
+total_cases <- sum(cases_data$ncases)
+
+# Calculate the number of cases in the highest alcohol and highest tobacco groups
+cases_highest_alcohol_tobacco <- sum(cases_data$ncases[cases_data$alcgp == "120+" & cases_data$tobgp == "30+"])
+
+# Calculate the probability
+probability <- cases_highest_alcohol_tobacco / total_cases
+
+# Print the probability rounded to 3 significant figures
+round(probability, 3)
+
+```
+
+```{r}
+# Load necessary library if not already loaded
+library(dplyr)
+
+# Filter for cases (ncases > 0)
+cases_data <- esoph %>% filter(ncases > 0)
+
+# Calculate the total number of cases
+total_cases <- sum(cases_data$ncases)
+
+# Calculate the number of cases in the highest alcohol group ("120+")
+cases_highest_alcohol <- sum(cases_data$ncases[cases_data$alcgp == "120+"])
+
+# Calculate the number of cases in the highest tobacco group ("30+")
+cases_highest_tobacco <- sum(cases_data$ncases[cases_data$tobgp == "30+"])
+
+# Calculate the number of cases in both highest alcohol and highest tobacco groups
+cases_both <- sum(cases_data$ncases[cases_data$alcgp == "120+" & cases_data$tobgp == "30+"])
+
+# Calculate the probability of being in either highest alcohol or highest tobacco group
+probability <- (cases_highest_alcohol + cases_highest_tobacco - cases_both) / total_cases
+
+# Print the probability rounded to 3 significant figures
+round(probability, 3)
+
+```
+```{r}
+high_alc_controls <- esoph %>%
+  filter(alcgp == "120+") %>%
+  pull(ncontrols) %>%
+  sum()
+
+p_control_high_alc <- high_alc_controls/all_controls
+p_control_high_alc
+
+```
+
+```{r}
+ p_case_high_alc/p_control_high_alc
+
+
+```
+
+
+```{r}
+high_tob_controls <- esoph %>%
+  filter(tobgp == "30+") %>%
+  pull(ncontrols) %>%
+  sum()
+
+p_control_high_tob <- high_tob_controls/all_controls
+p_control_high_tob
+
+```
+
+```{r}
+high_alc_tob_controls <- esoph %>%
+  filter(alcgp == "120+" & tobgp == "30+") %>%
+  pull(ncontrols) %>%
+  sum()
+
+p_control_high_alc_tob <- high_alc_tob_controls/all_controls
+p_control_high_alc_tob
+```
+
+```{r}
+p_control_either_highest <- p_control_high_alc + p_control_high_tob - p_control_high_alc_tob
+p_control_either_highest
+```
+
+```{r}
+p_case_either_highest/p_control_either_highest
+```
+
+
+
+
+
+
+
+
+
+
+
+
