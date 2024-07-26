@@ -1,0 +1,121 @@
+---
+title: "Web Scraping"
+output: html_document
+date: "2024-07-26"
+---
+
+```{r}
+library(rvest)
+url <- "https://web.archive.org/web/20181024132313/http://www.stevetheump.com/Payrolls.htm"
+h <- read_html(url)
+```
+
+```{r}
+nodes <- html_nodes(h, "table")
+```
+
+```{r}
+# Convert the first four tables to data frames
+table1 <- html_table(nodes[[1]], fill = TRUE)
+table2 <- html_table(nodes[[2]], fill = TRUE)
+table3 <- html_table(nodes[[3]], fill = TRUE)
+table4 <- html_table(nodes[[4]], fill = TRUE)
+
+# Inspect the first four tables
+print(table1)
+print(table2)
+print(table3)
+print(table4)
+```
+
+
+```{r}
+# Convert entry 10 of nodes to a data frame called tab_1
+tab_1 <- html_table(nodes[[10]], fill = TRUE)
+
+# Convert entry 19 of nodes to a data frame called tab_2
+tab_2 <- html_table(nodes[[19]], fill = TRUE)
+
+# Inspect the tables
+print(tab_1)
+print(tab_2)
+```
+
+```{r}
+# Remove the extra first column from tab_1
+tab_1 <- tab_1[-1]
+
+# Remove the first row of each dataset
+tab_1 <- tab_1[-1, ]
+tab_2 <- tab_2[-1, ]
+```
+
+```{r}
+# Inspect the tables
+print(tab_1)
+print(tab_2)
+```
+
+
+```{r}
+library(dplyr)
+# Change the column names for each table
+colnames(tab_1) <- c("Team", "Payroll", "Average")
+colnames(tab_2) <- c("Team", "Payroll", "Average")
+
+# Combine the two tables using full_join() by Team
+combined_table <- full_join(tab_1, tab_2, by = "Team")
+
+# Inspect the combined table
+print(combined_table)
+```
+
+
+```{r}
+library(rvest)
+library(tidyverse)
+url <- "https://en.wikipedia.org/w/index.php?title=Opinion_polling_for_the_United_Kingdom_European_Union_membership_referendum&oldid=896735054"
+```
+
+```{r}
+# Read the HTML from the URL
+webpage <- read_html(url)
+
+# Extract nodes of the "table" class
+tables <- webpage %>% html_nodes("table")
+
+# Count the number of tables
+num_tables <- length(tables)
+
+# Print the number of tables
+print(num_tables)
+```
+
+```{r}
+# Extract nodes of the "table" class
+tables <- webpage %>% html_nodes("table")
+
+# Inspect the first several tables to find the desired one
+table_found <- FALSE
+table_number <- 0
+
+for (i in seq_along(tables)) {
+  table <- html_table(tables[[i]], fill = TRUE)
+  if (ncol(table) == 9 && colnames(table)[1] == "Date(s) conducted") {
+    table_number <- i
+    table_found <- TRUE
+    break
+  }
+}
+
+# Print the table number if found
+if (table_found) {
+  cat("The first table number with 9 columns and the first column named 'Date(s) conducted' is:", table_number, "\n")
+} else {
+  cat("No such table found.\n")
+}
+```
+
+
+
+
