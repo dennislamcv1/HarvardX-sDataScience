@@ -1,0 +1,432 @@
+---
+title: "Titanic Exercises"
+output: html_document
+date: "2024-07-31"
+---
+
+```{r}
+library(titanic)    # loads titanic_train data frame
+library(caret)
+library(tidyverse)
+library(rpart)
+
+# 3 significant digits
+options(digits = 3)
+
+# clean the data - `titanic_train` is loaded with the titanic package
+titanic_clean <- titanic_train %>%
+    mutate(Survived = factor(Survived),
+           Embarked = factor(Embarked),
+           Age = ifelse(is.na(Age), median(Age, na.rm = TRUE), Age), # NA age to median age
+           FamilySize = SibSp + Parch + 1) %>%    # count family members
+    select(Survived,  Sex, Pclass, Age, Fare, SibSp, Parch, FamilySize, Embarked)
+```
+
+
+```{r}
+# Set seed for reproducibility
+set.seed(42, sample.kind="Rounding")
+
+
+# Split the data into training (80%) and test (20%) sets
+train_index <- createDataPartition(titanic_clean$Survived, p = 0.8, list = FALSE)
+train_set <- titanic_clean[train_index, ]
+test_set <- titanic_clean[-train_index, ]
+
+# Calculate the number of observations in each set
+num_train <- nrow(train_set)
+num_test <- nrow(test_set)
+
+# Calculate the proportion of individuals in the training set who survived
+prop_survived_train <- mean(train_set$Survived == 1)
+
+# Print the results
+cat("Number of observations in the training set:", num_train, "\n")
+cat("Number of observations in the test set:", num_test, "\n")
+cat("Proportion of individuals in the training set who survived:", prop_survived_train, "\n")
+```
+
+```{r}
+set.seed(3, sample.kind="Rounding")
+# guess with equal probability of survival
+guess <- sample(c(0,1), nrow(test_set), replace = TRUE)
+mean(guess == test_set$Survived)
+```
+
+```{r}
+train_set %>%
+    group_by(Sex) %>%
+    summarize(Survived = mean(Survived == 1)) %>%
+    filter(Sex == "female") %>%
+    pull(Survived)
+
+train_set %>%
+    group_by(Sex) %>%
+    summarize(Survived = mean(Survived == 1)) %>%
+    filter(Sex == "male") %>%
+    pull(Survived)
+
+
+```
+
+```{r}
+sex_model <- ifelse(test_set$Sex == "female", 1, 0)    # predict Survived=1 if female, 0 if male
+mean(sex_model == test_set$Survived)    # calculate accuracy
+
+
+```
+
+```{r}
+train_set %>%
+    group_by(Pclass) %>%
+    summarize(Survived = mean(Survived == 1))
+
+```
+
+
+```{r}
+class_model <- ifelse(test_set$Pclass == 1, 1, 0)    # predict survival only if first class
+mean(class_model == test_set$Survived)    # calculate accuracy
+
+```
+```{r}
+train_set %>%
+    group_by(Sex, Pclass) %>%
+    summarize(Survived = mean(Survived == 1)) %>%
+    filter(Survived > 0.5)
+        
+```
+
+```{r}
+sex_class_model <- ifelse(test_set$Sex == "female" & test_set$Pclass != 3, 1, 0)
+mean(sex_class_model == test_set$Survived)
+```
+
+```{r}
+confusionMatrix(data = factor(sex_model), reference = factor(test_set$Survived))
+confusionMatrix(data = factor(class_model), reference = factor(test_set$Survived))
+confusionMatrix(data = factor(sex_class_model), reference = factor(test_set$Survived))
+```
+
+
+```{r}
+F_meas(data = factor(sex_model), reference = test_set$Survived)
+F_meas(data = factor(class_model), reference = test_set$Survived)
+F_meas(data = factor(sex_class_model), reference = test_set$Survived)
+```
+
+```{r}
+library(caret)
+library(titanic)
+library(tidyverse)
+
+# Set seed for reproducibility
+set.seed(1, sample.kind="Rounding")
+
+# Clean the data as before
+titanic_clean <- titanic_train %>%
+  mutate(
+    Survived = factor(Survived),
+    Embarked = factor(Embarked),
+    Age = ifelse(is.na(Age), median(Age, na.rm = TRUE), Age),
+    FamilySize = SibSp + Parch + 1
+  ) %>%
+  select(Survived, Sex, Pclass, Age, Fare, SibSp, Parch, FamilySize, Embarked)
+
+# Split the data into training (80%) and test (20%) sets
+train_index <- createDataPartition(titanic_clean$Survived, p = 0.8, list = FALSE)
+train_set <- titanic_clean[train_index, ]
+test_set <- titanic_clean[-train_index, ]
+
+# Train the model using Loess (gamLoess)
+model <- train(
+  Survived ~ Fare,
+  data = train_set,
+  method = "gamLoess"
+)
+
+# Predict on the test set
+predictions <- predict(model, newdata = test_set)
+
+# Calculate accuracy
+accuracy <- mean(predictions == test_set$Survived)
+accuracy
+
+
+```
+
+```{r}
+library(caret)
+library(titanic)
+library(tidyverse)
+
+# Set seed for reproducibility
+set.seed(1, sample.kind="Rounding")
+
+# Clean the data as before
+titanic_clean <- titanic_train %>%
+  mutate(
+    Survived = factor(Survived),
+    Embarked = factor(Embarked),
+    Age = ifelse(is.na(Age), median(Age, na.rm = TRUE), Age),
+    FamilySize = SibSp + Parch + 1
+  ) %>%
+  select(Survived, Sex, Pclass, Age, Fare, SibSp, Parch, FamilySize, Embarked)
+
+# Split the data into training (80%) and test (20%) sets
+train_index <- createDataPartition(titanic_clean$Survived, p = 0.8, list = FALSE)
+train_set <- titanic_clean[train_index, ]
+test_set <- titanic_clean[-train_index, ]
+
+# Train the logistic regression model using Age as the only predictor
+model <- train(
+  Survived ~ Age,
+  data = train_set,
+  method = "glm",
+  family = binomial
+)
+
+# Predict on the test set
+predictions <- predict(model, newdata = test_set)
+
+# Calculate accuracy
+accuracy <- mean(predictions == test_set$Survived)
+accuracy
+
+```
+
+```{r}
+set.seed(1, sample.kind="Rounding") 
+train_glm <- train(Survived ~ Sex + Pclass + Fare + Age, method = "glm", data = train_set)
+glm_preds <- predict(train_glm, test_set)
+mean(glm_preds == test_set$Survived)
+
+```
+
+```{r}
+set.seed(1, sample.kind="Rounding")
+train_glm_all <- train(Survived ~ ., method = "glm", data = train_set)
+glm_all_preds <- predict(train_glm_all, test_set)
+mean(glm_all_preds == test_set$Survived)
+
+```
+
+```{r}
+# Set options and seed
+options(digits = 3)
+set.seed(6, sample.kind="Rounding")  # Updated seed value
+
+# Clean the data
+titanic_clean <- titanic_train %>%
+    mutate(Survived = factor(Survived),
+           Embarked = factor(Embarked),
+           Age = ifelse(is.na(Age), median(Age, na.rm = TRUE), Age),
+           FamilySize = SibSp + Parch + 1) %>%
+    select(Survived, Sex, Pclass, Age, Fare, SibSp, Parch, FamilySize, Embarked)
+
+# Split the data into training and test sets
+train_index <- createDataPartition(titanic_clean$Survived, p = 0.8, list = FALSE)
+train_set <- titanic_clean[train_index, ]
+test_set <- titanic_clean[-train_index, ]
+
+# Define the tuning grid
+tune_grid <- expand.grid(k = seq(3, 51, 2))
+
+# Train the kNN model
+knn_fit <- train(Survived ~ ., data = train_set, 
+                 method = "knn", 
+                 tuneGrid = tune_grid,
+                 trControl = trainControl(method = "cv", number = 10))
+
+# Print the results
+knn_fit
+```
+
+```{r}
+knn_preds <- predict(train_knn, test_set)
+mean(knn_preds == test_set$Survived)
+
+```
+
+```{r}
+library(titanic)    # loads titanic_train data frame
+library(caret)
+library(tidyverse)
+library(rpart)
+
+# Set options and seed
+options(digits = 3)
+set.seed(8, sample.kind="Rounding")  # Updated seed value
+
+# Clean the data
+titanic_clean <- titanic_train %>%
+    mutate(Survived = factor(Survived),
+           Embarked = factor(Embarked),
+           Age = ifelse(is.na(Age), median(Age, na.rm = TRUE), Age),
+           FamilySize = SibSp + Parch + 1) %>%
+    select(Survived, Sex, Pclass, Age, Fare, SibSp, Parch, FamilySize, Embarked)
+
+# Split the data into training and test sets
+train_index <- createDataPartition(titanic_clean$Survived, p = 0.8, list = FALSE)
+train_set <- titanic_clean[train_index, ]
+test_set <- titanic_clean[-train_index, ]
+
+# Define the tuning grid
+tune_grid <- expand.grid(k = seq(3, 51, 2))
+
+# Define training control with 10-fold cross-validation
+train_control <- trainControl(method = "cv", number = 10)
+
+# Train the kNN model
+knn_fit <- train(Survived ~ ., data = train_set, 
+                 method = "knn", 
+                 tuneGrid = tune_grid,
+                 trControl = train_control)
+
+# Display the optimal value of k
+knn_fit$bestTune
+
+```
+
+
+```{r}
+# Make predictions on the test set using the cross-validated kNN model
+knn_predictions_cv <- predict(knn_fit, newdata = test_set)
+
+# Calculate the confusion matrix
+confusion_matrix_cv <- confusionMatrix(knn_predictions_cv, test_set$Survived)
+
+# Extract accuracy from the confusion matrix
+accuracy_cv <- confusion_matrix_cv$overall['Accuracy']
+
+# Print the accuracy
+accuracy_cv
+
+```
+
+```{r}
+library(titanic)    # loads titanic_train data frame
+library(caret)
+library(tidyverse)
+library(rpart)
+
+# Set options and seed
+options(digits = 3)
+set.seed(10, sample.kind = "Rounding")  # Set seed to 10
+
+# Clean the data
+titanic_clean <- titanic_train %>%
+    mutate(Survived = factor(Survived),
+           Embarked = factor(Embarked),
+           Age = ifelse(is.na(Age), median(Age, na.rm = TRUE), Age),
+           FamilySize = SibSp + Parch + 1) %>%
+    select(Survived, Sex, Pclass, Age, Fare, SibSp, Parch, FamilySize, Embarked)
+
+# Split the data into training and test sets
+train_index <- createDataPartition(titanic_clean$Survived, p = 0.8, list = FALSE)
+train_set <- titanic_clean[train_index, ]
+test_set <- titanic_clean[-train_index, ]
+
+# Define the tuning grid for cp
+tune_grid <- expand.grid(cp = seq(0, 0.05, 0.002))
+
+# Define training control with 10-fold cross-validation
+train_control <- trainControl(method = "cv", number = 10)
+
+# Train the decision tree model
+tree_fit <- train(Survived ~ ., data = train_set, 
+                  method = "rpart", 
+                  tuneGrid = tune_grid,
+                  trControl = train_control)
+
+# Display the optimal value of cp
+tree_fit$bestTune
+
+```
+
+```{r}
+# Make predictions on the test set using the decision tree model
+tree_predictions <- predict(tree_fit, newdata = test_set)
+
+# Calculate the confusion matrix
+confusion_matrix_tree <- confusionMatrix(tree_predictions, test_set$Survived)
+
+# Extract accuracy from the confusion matrix
+accuracy_tree <- confusion_matrix_tree$overall['Accuracy']
+
+# Print the accuracy
+accuracy_tree
+
+```
+
+```{r}
+# Load necessary library for plotting
+library(rpart.plot)
+
+# Plot the decision tree
+rpart.plot(tree_fit$finalModel)
+
+# Inspect the final model
+tree_fit$finalModel
+
+```
+
+
+```{r}
+library(caret)
+library(tidyverse)
+library(rpart)
+library(randomForest)
+
+# Set the seed for reproducibility
+set.seed(14, sample.kind = "Rounding")
+
+# Clean the data (if not already cleaned)
+titanic_clean <- titanic_train %>%
+    mutate(Survived = factor(Survived),
+           Embarked = factor(Embarked),
+           Age = ifelse(is.na(Age), median(Age, na.rm = TRUE), Age),
+           FamilySize = SibSp + Parch + 1) %>%
+    select(Survived, Sex, Pclass, Age, Fare, SibSp, Parch, FamilySize, Embarked)
+
+# Split the data into training and test sets
+train_index <- createDataPartition(titanic_clean$Survived, p = 0.8, list = FALSE)
+train_set <- titanic_clean[train_index, ]
+test_set <- titanic_clean[-train_index, ]
+
+# Define the tuning grid for mtry
+tune_grid <- expand.grid(mtry = 1:7)
+
+# Define training control with 10-fold cross-validation
+train_control <- trainControl(method = "cv", number = 10)
+
+# Train the random forest model
+rf_fit <- train(Survived ~ ., data = train_set, 
+                method = "rf", 
+                tuneGrid = tune_grid,
+                trControl = train_control,
+                ntree = 100)
+
+# Display the optimal value of mtry
+rf_fit$bestTune
+
+```
+
+
+```{r}
+# Make predictions on the test set using the trained random forest model
+rf_predictions <- predict(rf_fit, newdata = test_set)
+
+# Calculate the confusion matrix
+confusion_matrix_rf <- confusionMatrix(rf_predictions, test_set$Survived)
+
+# Extract accuracy from the confusion matrix
+accuracy_rf <- confusion_matrix_rf$overall['Accuracy']
+
+# Print the accuracy
+accuracy_rf
+
+```
+
+
+
